@@ -4,7 +4,7 @@ Donate link: http://MyWebsiteAdvisor.com/donations/
 Tags: admin, groups, users, security
 Requires at least: 3.0.1
 Tested up to: 3.5
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,11 @@ If we choose your testimonial or website we can link to your site and generate s
 
 == Changelog ==
 
+
+= 1.0.1=
+* changed from group to groups as the name of the taxonomy
+
+
 = 1.0 =
 * Initial Release
 
@@ -94,6 +99,11 @@ If we choose your testimonial or website we can link to your site and generate s
 
 
 == Upgrade Notice ==
+
+
+= 1.0.1=
+* changed from group to groups as the name of the taxonomy
+
 
 = 1.0 =
 Initial Release of the Plugin
