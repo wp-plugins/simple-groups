@@ -2,8 +2,8 @@
 /*
 Plugin Name: Simple Groups
 Plugin URI: http://MyWebsiteAdvisor.com/tools/wordpress-plugins/simple-groups/
-Description: Simple Groups
-Version: 1.0.1
+Description: Simple Groups Plugin for WordPress
+Version: 1.1
 Author: MyWebsiteAdvisor
 Author URI: http://MyWebsiteAdvisor.com
 */
@@ -25,9 +25,6 @@ class Simple_Groups{
 		//add the groups taxonomy admin page
 		add_action( 'admin_menu', array(&$this,'add_groups_admin_page') );
 		
-		// filter by Group
-		add_action('pre_user_query', array(&$this, 'user_query'));	
-				
 		// add the user count column on the group page
 		add_action( 'manage_groups_custom_column', array(&$this,'manage_user_groups_column'), 10, 3 );
 		
@@ -48,6 +45,9 @@ class Simple_Groups{
 		//add Groups row action link on the users page list table
 		add_filter( 'user_row_actions', array(&$this,'add_users_action_row_groups_link'), 10, 2 );
 		
+		// filter by Group
+		add_action('pre_user_query', array(&$this, 'user_query'));	
+		
 		
 		/*
 		user profile/edit user page
@@ -61,9 +61,17 @@ class Simple_Groups{
 		add_action( 'edit_user_profile_update', array(&$this, 'save_user_groups'));
 		
 
-	}
+		//add register shortcode functions
+		add_shortcode( 'members_only', array(&$this, 'members_only_shortcode') );
+		add_shortcode( 'group_access', array(&$this, 'group_access_shortcode') );
+		add_shortcode( 'groups_access', array(&$this, 'group_access_shortcode') );
+		add_shortcode( 'public_access', array(&$this, 'public_access_shortcode') );		
+		
 
+	}
 	
+	
+
 	// registers the custom 'groups' taxonomy
 	function register_groups_taxonomy() {
 	
@@ -169,11 +177,11 @@ class Simple_Groups{
 
 		$tax = get_taxonomy( 'groups' );
 
-		/* Make sure the user can assign terms of the group taxonomy before proceeding. */
+		/* Make sure the user can assign terms of the groups taxonomy before proceeding. */
 		if ( !current_user_can( $tax->cap->assign_terms ) || !current_user_can('edit_users') )
 			return;
 
-		/* Get the terms of the 'profession' taxonomy. */
+		/* Get the terms of the 'groups' taxonomy. */
 		$terms = get_terms( 'groups', array( 'hide_empty' => false ) ); ?>
 
 		<h3 id="groups">Groups</h3>
@@ -203,9 +211,9 @@ class Simple_Groups{
 				echo "</div>";
 			}
 
-			/* If there are no user-group terms, display a message. */
+			/* If there are no groups, display a message. */
 			else {
-				_e('There are no groups defined. <a href="'.admin_url('edit-tags.php?taxonomy=group').'">'.__('Add a Group', 'simple-groups').'</a>');
+				_e('There are no groups defined. <a href="'.admin_url('edit-tags.php?taxonomy=groups').'">'.__('Add a Group', 'simple-groups').'</a>');
 			}
 
 			?></td>
@@ -286,10 +294,13 @@ class Simple_Groups{
 
 	// add the user count column on the group page
 	function manage_user_groups_column( $display, $column, $term_id ) {
+	
 		if ( 'users' === $column ) {
 			$term = get_term( $term_id, 'groups' );
 			echo '<a href="'.admin_url('users.php?groups='.$term->slug).'">'.sprintf(_n(__('%s User'), __('%s Users'), $term->count), $term->count).'</a>';
 		}
+		
+		
 		return;
 	}
 
@@ -336,20 +347,27 @@ class Simple_Groups{
 
 
 	// worker function for [group_access group="name"][/group_access] shortcode.
+	// worker function for [groups_access groups="name,name2"][/groups_access] shortcode.
 	function group_access_shortcode( $atts, $content = null ){
-		if(is_user_logged_in() && isset($atts['groups']) && "" !== $atts['groups']){
+		if( is_user_logged_in() ) {
 		
-			$user = wp_get_current_user();
-			$terms = $this->get_groups($user);
-			if(empty($terms)) { return false; }
-			
-			$groups = array();
-			foreach($terms as $term){
-				$groups[] = $term->name;
-			}
-			
-			if(in_array($atts['groups'], $groups)){
-				return '<span>' . do_shortcode($content) . '</span>';
+			if(  (isset($atts['groups']) && "" !== $atts['groups']) || (isset($atts['group']) && "" !== $atts['group']) ){
+				
+				if(isset($atts['groups']))
+					$atts['groups'] = explode(",", $atts['groups']);
+				
+				$user = wp_get_current_user();
+				$terms = $this->get_groups($user);
+				if(empty($terms)) { return false; }
+				
+				$groups = array();
+				foreach($terms as $term){
+					$groups[] = $term->name;
+				}
+				
+				if( (isset($atts['groups']) && array_intersect($atts['groups'], $groups)) || (isset($atts['group']) && in_array($atts['group'], $groups)) ){
+					return '<span>' . do_shortcode($content) . '</span>';
+				}
 			}
 		}
 	}
@@ -364,6 +382,14 @@ class Simple_Groups{
 	}
 	
 	
+	// worker function for [public_access][/public_access] shortcode.
+	// most likely this would be used to display login and register links.
+	function public_access_shortcode( $atts, $content = null ){
+		if(!is_user_logged_in()){
+			return '<span>' . do_shortcode($content) . '</span>';
+		}
+	}
+	
 }	// end of Simple_Groups Class
 
 
@@ -371,13 +397,6 @@ class Simple_Groups{
 
 // instantiate new simple_groups object
 $simple_groups = new Simple_Groups;
-
-
-
-
-//add register shortcode functions
-add_shortcode( 'members_only', array($simple_groups, 'members_only_shortcode') );
-add_shortcode( 'group_access', array($simple_groups, 'group_access_shortcode') );
 
 
 

@@ -4,7 +4,7 @@ Donate link: http://MyWebsiteAdvisor.com/donations/
 Tags: admin, groups, users, security
 Requires at least: 3.0.1
 Tested up to: 3.5
-Stable tag: 1.0.1
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,11 @@ If we choose your testimonial or website we can link to your site and generate s
 
 
 == Changelog ==
+
+= 1.1 =
+* updated the group_access shortcode to allow for group='name' or groups='name1,name2' syntax
+* also added groups_access shortcode which is the same as group access, just renamed for simplicity.
+* added public_access shortcode to be used for display of login/register links
 
 
 = 1.0.1=
