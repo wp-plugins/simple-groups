@@ -227,14 +227,18 @@ class Simple_Groups{
 	//save user info after the user edit page is saved
 	function save_user_groups( $user_id, $groups = array(), $bulk = false) {
 
-		$tax = get_taxonomy( 'groups' );
-
-		// Make sure the current user can edit the user and assign terms before proceeding.
-		if ( !current_user_can( 'edit_user', $user_id ) && current_user_can( $tax->cap->assign_terms ) ) {
+		// Make sure the current user can edit the user before proceeding.
+		if ( !current_user_can( 'edit_user', $user_id )  ) {
 			return false;
 		}
-
-		if(empty($user_groups) && !$bulk) {
+		
+		//make sure that the current user has admin like permissions to update groups, otherwise, do not edit the group membership
+		if ( !current_user_can( 'manage_options', $user_id ) ){
+			return false;
+		}
+		
+		
+		if(empty($groups) && !$bulk) {
 			$groups = @$_POST['groups'];
 		}
 
